@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AceWebs Sales Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen">
+
+  <div class="max-w-7xl mx-auto p-6">
+    <h1 class="text-3xl font-bold text-indigo-600 mb-6">📊 AceWebs Sales Dashboard</h1>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div class="bg-white shadow-lg rounded-2xl p-6 flex flex-col items-center justify-center">
+        <h2 class="text-xl font-semibold text-gray-600">💰 Total Revenue (This Month)</h2>
+        <p id="monthlyRevenue" class="text-3xl font-bold text-indigo-600 mt-2">₹0</p>
+      </div>
+
+      <div class="bg-white shadow-lg rounded-2xl p-6 flex flex-col items-center justify-center">
+        <h2 class="text-xl font-semibold text-gray-600">🏆 Best-Selling Service (This Month)</h2>
+        <p id="bestProduct" class="text-2xl font-bold text-green-600 mt-2">-</p>
+      </div>
+    </div>
+     <div>
+      <a href="index.html"
+                class="inline-flex items-center px-6 py-3 bg-[#a3ff0e] text-black rounded-md font-medium text-sm sm:text-base transition-colors duration-300 hover:bg-white mt-4">
+                Add Sales
+                <svg xmlns="http://www.w3.org/2000/svg" class="ml-2" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </a>
+     </div>
+    
+
+    <!-- Sales Table -->
+    <div class="bg-white shadow-lg rounded-2xl p-4 overflow-x-auto">
+      <table class="min-w-full border-collapse">
+        <thead>
+          <tr class="bg-indigo-600 text-white">
+            <th class="py-3 px-4 text-left">Date</th>
+            <th class="py-3 px-4 text-left">Service</th>
+            <th class="py-3 px-4 text-left">Price</th>
+            <th class="py-3 px-4 text-left">Customer</th>
+            <th class="py-3 px-4 text-left">Status</th>
+          </tr>
+        </thead>
+        <tbody id="salesTable" class="divide-y divide-gray-200"></tbody>
+      </table>
+    </div>
+
+    <!-- Chart Section -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+      <!-- Monthly Revenue -->
+      <div class="bg-white shadow-lg rounded-2xl p-6">
+        <h2 class="text-xl font-semibold mb-4">📅 Monthly Revenue</h2>
+        <canvas id="salesChart"></canvas>
+      </div>
+
+      <!-- Top Services -->
+      <div class="bg-white shadow-lg rounded-2xl p-6">
+        <h2 class="text-xl font-semibold mb-4">🏆 Top Services</h2>
+        <canvas id="productChart"></canvas>
+      </div>
+
+      <!-- Weekly Revenue -->
+      <div class="bg-white shadow-lg rounded-2xl p-6">
+        <h2 class="text-xl font-semibold mb-4">📆 Weekly Revenue</h2>
+        <canvas id="weeklyChart"></canvas>
+      </div>
+
+      <!-- Yearly Revenue -->
+      <div class="bg-white shadow-lg rounded-2xl p-6">
+        <h2 class="text-xl font-semibold mb-4">📊 Yearly Revenue</h2>
+        <canvas id="yearlyChart"></canvas>
+      </div>
+
+      <!-- Monthly Service Sales Count -->
+      <div class="bg-white shadow-lg rounded-2xl p-6">
+        <h2 class="text-xl font-semibold mb-4">📦 Monthly Service Sales Count</h2>
+        <canvas id="monthlyCountChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyABG0FIHrmpJiOBX9UI6gcCm23Wa_WibAE",
+      authDomain: "acewebs-sales-tracker.firebaseapp.com",
+      projectId: "acewebs-sales-tracker",
+      storageBucket: "acewebs-sales-tracker.firebasestorage.app",
+      messagingSenderId: "970679325910",
+      appId: "1:970679325910:web:7d29f1f63879ca058a2577"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function loadSales() {
+      const querySnapshot = await getDocs(collection(db, "sales"));
+      const table = document.getElementById("salesTable");
+      table.innerHTML = "";
+
+      let salesData = [];
+
+      querySnapshot.forEach((doc) => {
+        let data = doc.data();
+        let dateValue = data.date_str || "N/A";
+
+        let row = `
+          <tr class="hover:bg-gray-50 transition">
+            <td class="py-2 px-4">${dateValue}</td>
+            <td class="py-2 px-4">${data.product}</td>
+            <td class="py-2 px-4">₹${data.price}</td>
+            <td class="py-2 px-4">${data.customer}</td>
+            <td class="py-2 px-4">
+              <span class="px-2 py-1 rounded-full text-xs font-semibold 
+                ${data.status === 'Paid' ? 'bg-green-100 text-green-600' : 
+                   data.status === 'Cancelled' ? 'bg-red-100 text-red-600' : 
+                   'bg-yellow-100 text-yellow-600'}">
+                ${data.status}
+              </span>
+            </td>
+          </tr>
+        `;
+        table.innerHTML += row;
+
+        if (dateValue !== "N/A") {
+          salesData.push({ date: dateValue, price: data.price, product: data.product });
+        }
+      });
+
+      // --- Monthly Summary ---
+      const today = new Date();
+      const currentMonth = today.toISOString().slice(0,7); // yyyy-mm
+
+      const monthlySales = salesData.filter(s => s.date.startsWith(currentMonth));
+      const monthlyRevenue = monthlySales.reduce((sum, s) => sum + s.price, 0);
+
+      // Best-selling service this month
+      const productCount = {};
+      monthlySales.forEach(s => {
+        productCount[s.product] = (productCount[s.product] || 0) + s.price;
+      });
+
+      let bestProduct = "-";
+      if (Object.keys(productCount).length > 0) {
+        bestProduct = Object.entries(productCount).sort((a,b) => b[1]-a[1])[0][0];
+      }
+
+      // Update UI
+      document.getElementById("monthlyRevenue").innerText = "₹" + monthlyRevenue.toLocaleString();
+      document.getElementById("bestProduct").innerText = bestProduct;
+
+      renderCharts(salesData);
+    }
+
+    function renderCharts(salesData) {
+      const ctxMonth = document.getElementById("salesChart");
+      const ctxProduct = document.getElementById("productChart");
+      const ctxWeek = document.getElementById("weeklyChart");
+      const ctxYear = document.getElementById("yearlyChart");
+      const ctxCount = document.getElementById("monthlyCountChart");
+
+      const grouped = (arr, keyFn, valFn = x => x.price) =>
+        arr.reduce((acc, item) => {
+          const key = keyFn(item);
+          acc[key] = (acc[key] || 0) + valFn(item);
+          return acc;
+        }, {});
+
+      const monthly = grouped(salesData, s => s.date.slice(0, 7));
+      const products = grouped(salesData, s => s.product);
+      const weekly = grouped(salesData, s => {
+        const d = new Date(s.date);
+        const year = d.getFullYear();
+        const week = Math.ceil((((d - new Date(year,0,1)) / 86400000) + new Date(year,0,1).getDay()+1) / 7);
+        return `${year}-W${week}`;
+      });
+      const yearly = grouped(salesData, s => s.date.slice(0, 4));
+
+      // --- Monthly Revenue Chart ---
+      new Chart(ctxMonth, {
+        type: "line",
+        data: {
+          labels: Object.keys(monthly),
+          datasets: [{
+            label: "Total Revenue (₹)",
+            data: Object.values(monthly),
+            borderColor: "rgb(79, 70, 229)",
+            backgroundColor: "rgba(79, 70, 229, 0.2)",
+            tension: 0.3,
+            fill: true,
+          }]
+        }
+      });
+
+      // --- Top Services Chart ---
+      new Chart(ctxProduct, {
+        type: "doughnut",
+        data: {
+          labels: Object.keys(products),
+          datasets: [{
+            data: Object.values(products),
+            backgroundColor: ["#4f46e5","#f59e0b","#10b981","#ef4444","#3b82f6","#8b5cf6","#f43f5e"]
+          }]
+        }
+      });
+
+      // --- Weekly Revenue Chart ---
+      new Chart(ctxWeek, {
+        type: "bar",
+        data: {
+          labels: Object.keys(weekly),
+          datasets: [{
+            label: "Weekly Revenue (₹)",
+            data: Object.values(weekly),
+            backgroundColor: "rgba(79, 70, 229, 0.7)"
+          }]
+        }
+      });
+
+      // --- Yearly Revenue Chart ---
+      new Chart(ctxYear, {
+        type: "bar",
+        data: {
+          labels: Object.keys(yearly),
+          datasets: [{
+            label: "Yearly Revenue (₹)",
+            data: Object.values(yearly),
+            backgroundColor: "rgba(16, 185, 129, 0.7)"
+          }]
+        }
+      });
+
+      // --- Monthly Service Sales Count ---
+      const today = new Date();
+      const currentMonth = today.toISOString().slice(0,7);
+      const monthlySales = salesData.filter(s => s.date.startsWith(currentMonth));
+
+      const monthlyCounts = monthlySales.reduce((acc, s) => {
+        acc[s.product] = (acc[s.product] || 0) + 1;
+        return acc;
+      }, {});
+
+      new Chart(ctxCount, {
+        type: "bar",
+        data: {
+          labels: Object.keys(monthlyCounts),
+          datasets: [{
+            label: "Number of Sales",
+            data: Object.values(monthlyCounts),
+            backgroundColor: "rgba(245, 158, 11, 0.8)" // amber
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, stepSize: 1 } }
+        }
+      });
+    }
+
+    loadSales();
+  </script>
+</body>
+</html>
