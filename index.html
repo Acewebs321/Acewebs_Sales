@@ -6,12 +6,24 @@
   <title>AceWebs Sales Entry</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-gray-100 min-h-screen flex items-center justify-center">
 
+  <!-- ✅ Navbar -->
+  <nav class="bg-indigo-600 p-4 flex flex-col md:flex-row md:justify-between md:items-center text-white rounded-b-2xl shadow-md fixed top-0 left-0 w-full z-10">
+  <!-- Brand -->
+  <h1 class="text-lg font-bold mb-2 md:mb-0">AceWebs</h1>
 
-  
+  <!-- Links -->
+  <div class="flex flex-col md:flex-row md:space-x-4 space-y-2 md:space-y-0">
+    <a href="dashboard.html" class="px-4 py-2 rounded-lg hover:bg-indigo-700 text-center">📊 Dashboard</a>
+    <a href="index.html" class="px-4 py-2 rounded-lg bg-white text-indigo-600 text-center">➕ Add Sale</a>
+  </div>
+</nav>
 
-  <div class="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md">
+
+  <!-- ✅ Form card -->
+  <div class="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md mt-24">
     <h1 class="text-2xl font-bold text-indigo-600 mb-6">➕ Add New Sale</h1>
 
     <form id="salesForm" class="space-y-4">
@@ -52,16 +64,8 @@
       <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700">
         Save Sale
       </button>
-      <br><br>
-
-      <a href="dashboard.html"
-                class="w-full align-center bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700">
-                Dashboard
-               
-                </a>
     </form>
   </div>
-  
 
   <!-- Firebase -->
   <script type="module">
@@ -102,7 +106,7 @@
         });
 
         alert("✅ Sale added successfully!");
-        e.target.reset();
+        window.location.href = "dashboard.html"; // ✅ Redirect to dashboard
       } catch (error) {
         console.error("Error adding document: ", error);
         alert("❌ Error saving sale.");
